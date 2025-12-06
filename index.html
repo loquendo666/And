@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>IPTV Player Adult</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Eater&display=swap" rel="stylesheet">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #1a0a1f 0%, #2d0a3d 50%, #1a0a1f 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* PANTALLA DE CONTRASEÑA */
+.lock-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #0f0015 0%, #1f0a2d 50%, #0f0015 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(10px);
+}
+
+.lock-title {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  background: linear-gradient(90deg, #ff1493, #ff69b4, #da70d6, #ba55d3);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Creepster', cursive;
+  animation: gradient 3s ease infinite;
+  margin-bottom: 20px;
+  text-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+}
+
+.lock-subtitle {
+  font-size: 16px;
+  color: #ff69b4;
+  margin-bottom: 40px;
+  font-style: italic;
+}
+
+.password-input {
+  width: 280px;
+  padding: 18px 25px;
+  font-size: 24px;
+  text-align: center;
+  border-radius: 15px;
+  border: 3px solid #ff1493;
+  background: rgba(30, 10, 40, 0.8);
+  color: #ff69b4;
+  outline: none;
+  letter-spacing: 10px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  box-shadow: 0 0 30px rgba(255, 20, 147, 0.3);
+  transition: all 0.3s;
+}
+
+.password-input:focus {
+  border-color: #ff69b4;
+  box-shadow: 0 0 40px rgba(255, 20, 147, 0.6);
+  transform: scale(1.05);
+}
+
+.unlock-btn {
+  padding: 15px 50px;
+  font-size: 18px;
+  border-radius: 25px;
+  border: none;
+  background: linear-gradient(135deg, #ff1493, #ba55d3);
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+  transition: all 0.3s;
+}
+
+.unlock-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 50px rgba(255, 20, 147, 0.8);
+}
+
+.error-msg {
+  color: #ff3366;
+  font-size: 14px;
+  margin-top: 15px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.error-msg.show {
+  opacity: 1;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes gradient {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: rgba(15, 5, 20, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-bottom: 3px solid rgba(255, 20, 147, 0.4);
+  box-shadow: 0 4px 30px rgba(255, 20, 147, 0.3);
+}
+
+.top-title {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  background: linear-gradient(90deg, #ff1493, #ff69b4, #da70d6, #ba55d3, #ff1493);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Eater', cursive;
+  animation: gradient 3s ease infinite;
+  text-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+}
+
+.player-container {
+  position: fixed;
+  top: 80px;
+  left: 10px;
+  right: 10px;
+  z-index: 900;
+  background: linear-gradient(135deg, rgba(30, 10, 40, 0.95), rgba(50, 20, 60, 0.95));
+  border-radius: 20px;
+  padding: 12px;
+  box-shadow: 0 8px 40px rgba(255, 20, 147, 0.5);
+  border: 2px solid rgba(255, 20, 147, 0.4);
+}
+
+video {
+  width: 100%;
+  border-radius: 14px;
+  background: #000;
+  max-height: 50vh;
+}
+
+.content {
+  margin-top: 340px;
+  padding: 20px 10px 80px 10px;
+}
+
+.search-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-box {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  border-radius: 15px;
+  border: 2px solid rgba(255, 20, 147, 0.4);
+  background: rgba(30, 10, 40, 0.8);
+  color: #ff69b4;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.search-box::placeholder {
+  color: rgba(255, 105, 180, 0.5);
+}
+
+.search-box:focus {
+  border-color: #ff1493;
+  box-shadow: 0 0 20px rgba(255, 20, 147, 0.5);
+  background: rgba(30, 10, 40, 1);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background: linear-gradient(135deg, rgba(40, 20, 50, 0.9), rgba(60, 30, 70, 0.9));
+  border-radius: 16px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid rgba(255, 20, 147, 0.3);
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 20, 147, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.card:hover::before {
+  left: 100%;
+}
+
+.card:hover {
+  border-color: #ff1493;
+  box-shadow: 0 8px 30px rgba(255, 20, 147, 0.6);
+  transform: translateY(-5px);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #ffb3d9;
+  text-transform: capitalize;
+  line-height: 1.4;
+}
+
+.fav {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 22px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.fav:hover {
+  transform: scale(1.2);
+}
+
+.fav.active {
+  color: #ff1493;
+  text-shadow: 0 0 10px rgba(255, 20, 147, 0.8);
+}
+
+.navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: rgba(15, 5, 20, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 3px solid rgba(255, 20, 147, 0.4);
+  z-index: 1000;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 5px 20px;
+}
+
+.nav-item:hover {
+  color: #ff69b4;
+  transform: scale(1.1);
+}
+
+.nav-item.active {
+  color: #ff1493;
+  font-weight: bold;
+}
+
+.nav-icon {
+  font-size: 24px;
+}
+
+.status-bar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #ff69b4;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 20, 147, 0.3);
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .top-title {
+    font-size: 28px;
+  }
+  
+  .lock-title {
+    font-size: 36px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- PANTALLA DE CONTRASEÑA -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-title">SEXXY TV</div>
+  <div class="lock-subtitle">Solo para adultos</div>
+  <input type="password" id="passwordInput" class="password-input" placeholder="•••" maxlength="3">
+  <button onclick="verificarPassword()" class="unlock-btn">DESBLOQUEAR</button>
+  <div class="error-msg" id="errorMsg">❌ Contraseña incorrecta</div>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div id="mainContent" class="hidden">
+  <div class="top-bar">
+    <div class="top-title">SEXXY TV</div>
+  </div>
+
+  <div class="player-container">
+    <video id="player" controls autoplay playsinline preload="auto"></video>
+    <div class="status-bar" id="status">● EN VIVO</div>
+  </div>
+
+  <div class="content">
+    <div class="search-wrapper">
+      <input type="text" id="search" class="search-box" placeholder="🔍 Buscar canal...">
+    </div>
+    
+    <div class="grid" id="canales"></div>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item active">
+      <div class="nav-icon">📺</div>
+      <div>Todos</div>
+    </div>
+    <div class="nav-item" onclick="filtrarFavoritos()">
+      <div class="nav-icon">💗</div>
+      <div>Favoritos</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<script>
+// VERIFICAR CONTRASEÑA
+function verificarPassword() {
+  const input = document.getElementById('passwordInput');
+  const errorMsg = document.getElementById('errorMsg');
+  
+  if (input.value === '666') {
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    renderCanales();
+    if (listaCanales.length > 0) {
+      playStream(listaCanales[0].url, listaCanales[0].nombre);
+    }
+  } else {
+    errorMsg.classList.add('show');
+    input.value = '';
+    input.style.animation = 'shake 0.5s';
+    setTimeout(() => {
+      errorMsg.classList.remove('show');
+      input.style.animation = '';
+    }, 2000);
+  }
+}
+
+document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') verificarPassword();
+});
+
+const listaCanales = [
+  { nombre: "Venus", url: "http://fivetv.org:25461/live/B78N65/N3421U/26773.m3u8" },
+  { nombre: "Playboy", url: "http://fivetv.org:25461/live/B78N65/N3421U/26774.m3u8" },
+  { nombre: "POV", url: "http://fivetv.org:25461/live/B78N65/N3421U/172156.m3u8" },
+  { nombre: "Big Tits", url: "http://fivetv.org:25461/live/B78N65/N3421U/172157.m3u8" },
+  { nombre: "Blonde", url: "http://fivetv.org:25461/live/B78N65/N3421U/172158.m3u8" },
+  { nombre: "Mia Khalifa", url: "http://fivetv.org:25461/live/B78N65/N3421U/172159.m3u8" },
+  { nombre: "Brunette", url: "http://fivetv.org:25461/live/B78N65/N3421U/172160.m3u8" },
+  { nombre: "Red Lingth HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/172161.m3u8" },
+  { nombre: "Rough", url: "http://fivetv.org:25461/live/B78N65/N3421U/172162.m3u8" },
+  { nombre: "Penthouse", url: "http://fivetv.org:25461/live/B78N65/N3421U/172163.m3u8" },
+  { nombre: "Ebony", url: "http://fivetv.org:25461/live/B78N65/N3421U/172165.m3u8" },
+  { nombre: "Latina XXX", url: "http://fivetv.org:25461/live/B78N65/N3421U/172166.m3u8" },
+  { nombre: "Skini", url: "http://fivetv.org:25461/live/B78N65/N3421U/172167.m3u8" },
+  { nombre: "White", url: "http://fivetv.org:25461/live/B78N65/N3421U/172169.m3u8" },
+  { nombre: "Brazzers HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/184784.m3u8" },
+  { nombre: "Dorcel TV", url: "http://fivetv.org:25461/live/B78N65/N3421U/187242.m3u8" },
+  { nombre: "Hustler HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/187243.m3u8" },
+  { nombre: "O-La-La", url: "http://fivetv.org:25461/live/B78N65/N3421U/187245.m3u8" },
+  { nombre: "Family X HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/187248.m3u8" },
+  { nombre: "Sunbeach TV", url: "http://fivetv.org:25461/live/B78N65/N3421U/187247.m3u8" },
+  { nombre: "Anal", url: "http://fivetv.org:25461/live/B78N65/N3421U/187249.m3u8" },
+  { nombre: "Blowjob", url: "http://fivetv.org:25461/live/B78N65/N3421U/187253.m3u8" },
+  { nombre: "Big Ass", url: "http://fivetv.org:25461/live/B78N65/N3421U/187252.m3u8" },
+  { nombre: "MILF", url: "http://fivetv.org:25461/live/B78N65/N3421U/187255.m3u8" },
+  { nombre: "Teen", url: "http://fivetv.org:25461/live/B78N65/N3421U/187256.m3u8" },
+  { nombre: "XY Plus HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/189153.m3u8" },
+  { nombre: "Sexmex HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/296507.m3u8" },
+  { nombre: "Bang Bus HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/296508.m3u8" },
+  { nombre: "Monkey Talk", url: "http://fivetv.org:25461/live/B78N65/N3421U/296509.m3u8" },
+  { nombre: "Shoplifther HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/296510.m3u8" },
+  { nombre: "Xtasis HD", url: "http://fivetv.org:25461/live/B78N65/N3421U/296511.m3u8" },
+  { nombre: "24/7 Sexo Duro", url: "http://fivetv.org:25461/live/B78N65/N3421U/333314.m3u8" },
+  { nombre: "24/7 Viejos y Jóvenes", url: "http://fivetv.org:25461/live/B78N65/N3421U/333312.m3u8" },
+  { nombre: "24/7 MILFs", url: "http://fivetv.org:25461/live/B78N65/N3421U/333312.m3u8" },
+  { nombre: "24/7 Profunda", url: "http://fivetv.org:25461/live/B78N65/N3421U/333310.m3u8" },
+  { nombre: "24/7 Lesbianas", url: "http://fivetv.org:25461/live/B78N65/N3421U/333309.m3u8" },
+  { nombre: "24/7 Orgasmos", url: "http://fivetv.org:25461/live/B78N65/N3421U/333308.m3u8" }
+];
+
+const player = document.getElementById("player");
+const grid = document.getElementById("canales");
+const search = document.getElementById("search");
+const status = document.getElementById("status");
+
+let hlsInstance = null;
+let mostrarFavoritos = false;
+
+function playStream(url, nombre) {
+  if (hlsInstance) {
+    hlsInstance.destroy();
+    hlsInstance = null;
+  }
+
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls({
+      enableWorker: true,
+      lowLatencyMode: true,
+      backBufferLength: 90
+    });
+    
+    hlsInstance.loadSource(url);
+    hlsInstance.attachMedia(player);
+    
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      player.play().catch(() => {});
+      status.textContent = `● ${nombre}`;
+      status.style.color = '#ff69b4';
+    });
+    
+    hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) {
+        status.textContent = '● Error';
+        status.style.color = '#ff3366';
+      }
+    });
+  } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+    player.src = url;
+    player.play().catch(() => {});
+    status.textContent = `● ${nombre}`;
+  }
+}
+
+function esFavorito(nombre) {
+  const favs = JSON.parse(localStorage.getItem("favoritos") || "[]");
+  return favs.includes(nombre);
+}
+
+function toggleFav(e, nombre) {
+  e.stopPropagation();
+  let favs = JSON.parse(localStorage.getItem("favoritos") || "[]");
+  if (favs.includes(nombre)) {
+    favs = favs.filter(n => n !== nombre);
+  } else {
+    favs.push(nombre);
+  }
+  localStorage.setItem("favoritos", JSON.stringify(favs));
+  renderCanales();
+}
+
+function filtrarFavoritos() {
+  mostrarFavoritos = !mostrarFavoritos;
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach((item, i) => {
+    item.classList.toggle('active', i === (mostrarFavoritos ? 1 : 0));
+  });
+  renderCanales();
+}
+
+function renderCanales() {
+  grid.innerHTML = "";
+  const texto = search.value.toLowerCase();
+  let lista = listaCanales.filter(c => {
+    const cumpleBusqueda = c.nombre.toLowerCase().includes(texto);
+    const cumpleFavoritos = !mostrarFavoritos || esFavorito(c.nombre);
+    return cumpleBusqueda && cumpleFavoritos;
+  });
+
+  lista.forEach(c => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <div class="card-title">${c.nombre}</div>
+      <div class="fav ${esFavorito(c.nombre) ? "active" : ""}">💗</div>
+    `;
+    
+    div.querySelector('.fav').onclick = (e) => toggleFav(e, c.nombre);
+    div.onclick = () => playStream(c.url, c.nombre);
+    
+    grid.appendChild(div);
+  });
+}
+
+search.oninput = renderCanales;
+</script>
+
+</body>
+</html>
